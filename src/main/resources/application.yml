@@ -1,0 +1,8 @@
+spring:
+  main:
+    web-application-type: NONE
+storage:
+  read: src/test/resources/datasets
+  write: src/test/resources/write
+service:
+  type: yarn
