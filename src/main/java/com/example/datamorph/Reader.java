@@ -24,6 +24,6 @@ public class Reader {
     }
 
     public Dataset<Row> getDataframeHeaderOnFlatCsv() {
-        return sparkSession.read().csv(Path.of(readLocation, filename).toString());
+        return sparkSession.read().option("header", true).csv(Path.of(readLocation, filename).toString());
     }
 }
