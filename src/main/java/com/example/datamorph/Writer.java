@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static org.apache.spark.sql.functions.col;
+
 @Component
 public class Writer {
     @Value("${storage.write}")
@@ -18,6 +20,7 @@ public class Writer {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("_yyyy-MM-dd_HH:mm:ss");
         final LocalDateTime now = LocalDateTime.now();
         final String outFilename = Path.of(writeLocation, filename + dtf.format(now)).toString();
-        df.write().csv(outFilename);
+        df.select(col("_corrupt_record")).write().csv(outFilename + "_corrupted");
+        df.where(col("_corrupt_record").isNull()).drop("_corrupt_record").write().csv(outFilename);
     }
 }
