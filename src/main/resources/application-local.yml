@@ -1,0 +1,5 @@
+storage:
+  read: src/test/resources/datasets
+  write: target/write
+service:
+  type: default
