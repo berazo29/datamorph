@@ -4,3 +4,11 @@ Pedro,35,false
 Venkata,32,true
 Sophia,24,true
 Emma,,car
+,Ten,
+"","10",red
+"Quoted String","9",blue
+"Quoated String","11",false
+"Quoated String","13","false"
+,15,true
+"Quoated String",17
+,,
