@@ -35,3 +35,6 @@ build/
 ### MACOS ###
 .DS_Store
 
+### EXCLUDE LARGE DATASETS ###
+flightsLarge.csv
+
