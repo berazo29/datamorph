@@ -44,14 +44,19 @@ public class Writer {
             if (readerCorruptRecordsEnabled) {
                 final String corruptRecord = readerProperties.getCorruptedColumnName();
                 final String malformedRecordsDirPath = outFilename + writerProperties.getCorruptedRecordsDirnamePostfix();
-                df.select(col(corruptRecord)).write().option("header", corruptRecordsHeaderEnabled).csv(malformedRecordsDirPath);
-                df = df.where(col(corruptRecord).isNull()).drop(corruptRecord);
+                df.where(col(corruptRecord).isNotNull())
+                        .write().option("header", corruptRecordsHeaderEnabled)
+                        .csv(malformedRecordsDirPath);
                 log.info("Malformed records write location at: {}", malformedRecordsDirPath);
+
+                df = df.where(col(corruptRecord)
+                                .isNull())
+                        .drop(corruptRecord);
             } else {
                 log.warn("Set the reader property [reader.corrupt-records=true] to enable the writer of corrupt records. Default behaviour is to skip writing of corrupt records.");
             }
         }
-        df.write().option("header", headerOn).csv(outFilename);
+        df.na().fill("").write().option("header", headerOn).csv(outFilename);
         return outFilename;
     }
 }
