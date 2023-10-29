@@ -1,51 +1,76 @@
 package com.example.datamorph;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.example.datamorph.config.ReaderProperties;
+import com.example.datamorph.config.StorageProperties;
+import com.example.datamorph.models.SchemaResolver;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.List;
 
+@Slf4j
 @Component
-@Setter
-@Getter
+@RequiredArgsConstructor
 public class Reader {
-    @Value("${storage.read}")
-    private String readLocation;
-    SparkSession sparkSession;
-    private String filename;
+    final ReaderProperties readerProperties;
+    final StorageProperties storageProperties;
+    final SchemaResolver schemaResolver;
+    final SparkSession sparkSession;
 
-    private StructType schema;
+    public Dataset<Row> getCsvDataframe(final String filename) {
+        final Boolean readCorruptRecordsEnabled = readerProperties.getCorruptRecordsEnabled();
+        final Boolean headerEnabled = readerProperties.getHeaderEnabled();
+        final String readLocation = storageProperties.getReadLocation();
+        final Boolean schemaPrintEnabled = readerProperties.getSchemaPrintEnabled();
+        final StructType schema = schemaResolver.getResolveSchema();
 
-    public Reader(final SparkSession sparkSession) {
-        this.sparkSession = sparkSession;
+        DataFrameReader dataFrameReader = getSparkMode();
+
+        if (schema != null) {
+            dataFrameReader = dataFrameReader
+                    .schema(schema);
+        }
+
+        if (readCorruptRecordsEnabled) {
+            dataFrameReader = dataFrameReader
+                    .option("columnNameOfCorruptRecord", readerProperties.getCorruptedColumnName());
+        }
+
+        log.warn("Property set [headerEnabled = `{}`]", headerEnabled);
+        dataFrameReader = dataFrameReader.option("header", headerEnabled);
+
+        final Dataset<Row> df;
+
+        df = dataFrameReader.csv(Path.of(readLocation, filename).toString()).cache();
+        if (schemaPrintEnabled) {
+            df.printSchema();
+        }
+        return df;
     }
 
-    public Dataset<Row> getDataframeHeaderOnFlatCsv() {
-
-        // for simplicity is using schema for badFoo.csv and foo.csv
-        if (schema == null) {
-            schema = DataTypes.createStructType(
-                    List.of(
-                            DataTypes.createStructField("Name", DataTypes.StringType, false),
-                            DataTypes.createStructField("Age", DataTypes.IntegerType, false),
-                            DataTypes.createStructField("Alive", DataTypes.BooleanType, false),
-                            DataTypes.createStructField("_corrupt_record", DataTypes.StringType, true)
-                    ));
+    public DataFrameReader getSparkMode() {
+        DataFrameReader dataFrameReader = sparkSession.read();
+        final String sparkMode = readerProperties.getSparkMode();
+        switch (sparkMode) {
+            case "FAILFAST":
+                dataFrameReader = dataFrameReader.option("mode", "FAILFAST");
+                break;
+            case "DROPMALFORMED":
+                dataFrameReader = dataFrameReader.option("mode", "DROPMALFORMED");
+                break;
+            case "PERMISSIVE":
+                dataFrameReader = dataFrameReader.option("mode", "PERMISSIVE");
+                break;
+            default:
+                log.warn("[reader.spark-mode=`{}`]. Set to default value `PERMISSIVE`.", sparkMode);
+                break;
         }
-        final Dataset<Row> df = sparkSession.read()
-                .option("header", true)
-                .option("columnNameOfCorruptRecord", "_corrupt_record")
-                .schema(schema)
-                .csv(Path.of(readLocation, filename).toString()).cache();
-        df.printSchema();
-        return df;
+        return dataFrameReader;
     }
 }
