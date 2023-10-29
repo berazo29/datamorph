@@ -15,7 +15,7 @@ storage:
   write: /datasets/write
 
 reader:
-  spark-mode: FAILFAST
+  spark-mode: PERMISSIVE
   corrupt-records:
     enabled: true
 
