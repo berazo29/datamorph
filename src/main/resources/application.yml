@@ -1,8 +1,34 @@
 spring:
   main:
     web-application-type: NONE
-storage:
-  read: src/test/resources/datasets
-  write: src/test/resources/write
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
 service:
-  type: yarn
+  spark:
+    mode: yarn
+
+storage:
+  read: /datasets
+  write: /datasets/write
+
+reader:
+  spark-mode: FAILFAST
+  corrupt-records:
+    enabled: true
+
+  schema:
+    enabled: true
+    name: flight
+    print-enabled: true
+  header-enabled: true
+
+writer:
+  corrupt-records:
+    write: true
+    header-enabled: true
+  header-enabled: true
+  postfix-date:
+    enabled: true
