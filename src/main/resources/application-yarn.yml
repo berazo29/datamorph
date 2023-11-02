@@ -1,0 +1,3 @@
+service:
+  spark:
+    mode: yarn

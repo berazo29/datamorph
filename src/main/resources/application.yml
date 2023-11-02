@@ -8,7 +8,7 @@ spring:
 
 service:
   spark:
-    mode: yarn
+    mode: local
 
 storage:
   read: /datasets

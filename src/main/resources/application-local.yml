@@ -1,7 +1,3 @@
 storage:
   read: src/test/resources/datasets
   write: target/write
-
-service:
-  spark:
-    mode: local
