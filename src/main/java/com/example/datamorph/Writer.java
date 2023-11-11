@@ -38,24 +38,31 @@ public class Writer {
         }
         outFilename = Path.of(writeLocation, outFilename).toString();
         log.info("Writing records at: {}", outFilename);
-
+        if (readerCorruptRecordsEnabled) {
+            final String corruptRecord = readerProperties.getCorruptedColumnName();
+            df.where(col(corruptRecord)
+                    .isNull()).drop(corruptRecord).na().fill("").write().option("header", headerOn).csv(outFilename);
+        } else {
+            df.na().fill("").write().option("header", headerOn).csv(outFilename);
+        }
         if (writeCorruptRecordsEnabled) {
             if (readerCorruptRecordsEnabled) {
                 final String corruptRecord = readerProperties.getCorruptedColumnName();
-                final String malformedRecordsDirPath = outFilename + writerProperties.getCorruptedRecordsDirnamePostfix();
-                df.where(col(corruptRecord).isNotNull())
-                        .write().option("header", corruptRecordsHeaderEnabled)
-                        .csv(malformedRecordsDirPath);
+                final String malformedRecordsDirPath = outFilename + "/" + writerProperties.getCorruptedRecordsDirnamePostfix();
+                Dataset<Row> corruptRecordsDf = df.where(col(corruptRecord).isNotNull());
+                if (corruptRecordsDf.count() == 0) {
+                    log.warn("Dataframe does not contain any invalid record.");
+                }
                 log.info("Malformed records write location at: {}", malformedRecordsDirPath);
 
-                df = df.where(col(corruptRecord)
-                                .isNull())
-                        .drop(corruptRecord);
+                corruptRecordsDf
+                        .write().option("header", corruptRecordsHeaderEnabled)
+                        .csv(malformedRecordsDirPath);
             } else {
                 log.warn("Set the reader property [reader.corrupt-records=true] to enable the writer of corrupt records. Default behaviour is to skip writing of corrupt records.");
             }
         }
-        df.na().fill("").write().option("header", headerOn).csv(outFilename);
+
         return outFilename;
     }
 }
