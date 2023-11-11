@@ -22,7 +22,6 @@ public class Writer {
 
     final WriterProperties writerProperties;
     final ReaderProperties readerProperties;
-
     final StorageProperties storageProperties;
 
     public String writeCsv(Dataset<Row> df, final String filename) {

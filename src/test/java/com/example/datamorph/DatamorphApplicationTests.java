@@ -1,12 +1,32 @@
 package com.example.datamorph;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
-@SpringBootTest(args = {"flights.csv"})
+import java.io.File;
+import java.util.Properties;
+
+@SpringBootApplication
 class DatamorphApplicationTests {
+
+    @TempDir
+    File tmpDir;
+
     @Test
-    void contextLoads() {
+    void flightsContextLoads() {
+        Properties properties = new Properties();
+        properties.put("storage.write", tmpDir.getAbsoluteFile());
+        new SpringApplicationBuilder(DatamorphApplication.class)
+                .properties(properties).run("flightsWithHeader.csv", "flight");
     }
 
+    @Test
+    void fooContextLoads() {
+        Properties properties = new Properties();
+        properties.put("storage.write", tmpDir.getAbsoluteFile());
+        new SpringApplicationBuilder(DatamorphApplication.class)
+                .properties(properties).run("fooWithHeader.csv", "foo");
+    }
 }

@@ -4,7 +4,8 @@ Example of ETL (Extract, Transform, Load) application using Spark, SpringBoot an
 
 ### Params
 
-- Filename
+- `arg[0]`: Filename
+- `arg[1]`: schema
 
 ### Activate Profile
 

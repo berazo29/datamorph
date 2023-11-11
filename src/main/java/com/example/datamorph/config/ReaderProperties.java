@@ -19,9 +19,6 @@ public class ReaderProperties {
     @Value("${reader.schema.print-enabled}")
     private Boolean schemaPrintEnabled;
 
-    @Value("${reader.schema.name}")
-    private String schemaName;
-
     @Value("${reader.header-enabled}")
     private Boolean headerEnabled;
 

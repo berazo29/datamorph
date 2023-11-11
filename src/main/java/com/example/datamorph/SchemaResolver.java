@@ -1,4 +1,4 @@
-package com.example.datamorph.models;
+package com.example.datamorph;
 
 import com.example.datamorph.config.ReaderProperties;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,8 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import static com.example.datamorph.models.MySchemas.*;
+
 
 @Component
 @Slf4j
@@ -17,12 +18,9 @@ public class SchemaResolver {
 
     final ReaderProperties readerProperties;
 
-    public StructType getResolveSchema() {
+    public StructType getResolveSchema(String schemaName) {
         final Boolean schemaEnabled = readerProperties.getSchemaEnabled();
         final Boolean corruptRecordsEnabled = readerProperties.getCorruptRecordsEnabled();
-        final String schemaName = readerProperties.getSchemaName();
-        final List<String> supportedSchemas = List.of("flight", "foo");
-
 
         if (corruptRecordsEnabled && !schemaEnabled) {
             log.error("Set the property configuration requirement [reader.corrupt-records-enabled=true] and [reader.schema.enabled=true]. Given [corruptRecordsEnabled={}, schemaEnabled={}].", corruptRecordsEnabled, schemaEnabled);
@@ -48,19 +46,17 @@ public class SchemaResolver {
     }
 
     private StructType getFooSchema() {
-        final MySchemas mySchemas = new MySchemas();
         if (readerProperties.getCorruptRecordsEnabled()) {
-            return mySchemas.getFooSchema().add(getDefaultCorruptedField());
+            return fooSchema.add(getDefaultCorruptedField());
         }
-        return mySchemas.getFooSchema();
+        return fooSchema;
     }
 
     private StructType getFlightSchema() {
-        final MySchemas mySchemas = new MySchemas();
         if (readerProperties.getCorruptRecordsEnabled()) {
-            return mySchemas.getFlightSchema().add(getDefaultCorruptedField());
+            return flightSchema.add(getDefaultCorruptedField());
         }
-        return mySchemas.getFlightSchema();
+        return flightSchema;
     }
 
     private StructField getDefaultCorruptedField() {

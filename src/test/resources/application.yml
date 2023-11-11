@@ -8,7 +8,6 @@ spring:
 
 storage:
   read: src/test/resources/datasets
-  write: target/write
 
 service:
   spark:
@@ -21,7 +20,6 @@ reader:
 
   schema:
     enabled: true
-    name: flight
     print-enabled: true
   header-enabled: true
 

@@ -9,13 +9,15 @@ import java.util.List;
 
 @Data
 public class MySchemas {
-    private final StructType fooSchema = DataTypes.createStructType(
+    public final static List<String> supportedSchemas = List.of("flight", "foo");
+
+    public final static StructType fooSchema = DataTypes.createStructType(
             List.of(
                     DataTypes.createStructField("Name", DataTypes.StringType, false, Metadata.empty()),
                     DataTypes.createStructField("Age", DataTypes.IntegerType, false, Metadata.empty()),
                     DataTypes.createStructField("Alive", DataTypes.BooleanType, false, Metadata.empty())
             ));
-    private final StructType flightSchema = DataTypes.createStructType(
+    public final static StructType flightSchema = DataTypes.createStructType(
             List.of(
                     DataTypes.createStructField("YEAR", DataTypes.IntegerType, true, Metadata.empty()),
                     DataTypes.createStructField("MONTH", DataTypes.IntegerType, true, Metadata.empty()),

@@ -2,7 +2,7 @@ package com.example.datamorph;
 
 import com.example.datamorph.config.ReaderProperties;
 import com.example.datamorph.config.StorageProperties;
-import com.example.datamorph.models.SchemaResolver;
+import com.example.datamorph.models.FileInformation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.DataFrameReader;
@@ -23,12 +23,12 @@ public class Reader {
     final SchemaResolver schemaResolver;
     final SparkSession sparkSession;
 
-    public Dataset<Row> getCsvDataframe(final String filename) {
+    public Dataset<Row> getCsvDataframe(FileInformation fileInformation) {
         final Boolean readCorruptRecordsEnabled = readerProperties.getCorruptRecordsEnabled();
         final Boolean headerEnabled = readerProperties.getHeaderEnabled();
         final String readLocation = storageProperties.getReadLocation();
         final Boolean schemaPrintEnabled = readerProperties.getSchemaPrintEnabled();
-        final StructType schema = schemaResolver.getResolveSchema();
+        final StructType schema = schemaResolver.getResolveSchema(fileInformation.getSchemaName());
 
         DataFrameReader dataFrameReader = getSparkMode();
 
@@ -47,7 +47,7 @@ public class Reader {
 
         final Dataset<Row> df;
 
-        df = dataFrameReader.csv(Path.of(readLocation, filename).toString()).cache();
+        df = dataFrameReader.csv(Path.of(readLocation, fileInformation.getFilename()).toString()).cache();
         if (schemaPrintEnabled) {
             df.printSchema();
         }
